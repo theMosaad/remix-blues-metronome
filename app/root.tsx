@@ -11,6 +11,7 @@ import {
 
 import { getUser } from "./session.server";
 import tailwindStylesheetUrl from "./styles/tailwind.css";
+import { MetronomeLinks } from "@metronome-sh/react";
 
 export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
@@ -34,6 +35,7 @@ export default function App() {
       <head>
         <Meta />
         <Links />
+        <MetronomeLinks />
       </head>
       <body className="h-full">
         <Outlet />

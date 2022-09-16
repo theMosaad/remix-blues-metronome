@@ -3,6 +3,10 @@ import express from "express";
 import compression from "compression";
 import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
+import {
+  createMetronomeGetLoadContext,
+  registerMetronome,
+} from "@metronome-sh/express";
 
 const app = express();
 
@@ -68,15 +72,26 @@ app.use(morgan("tiny"));
 const MODE = process.env.NODE_ENV;
 const BUILD_DIR = path.join(process.cwd(), "build");
 
+const buildWithMetronome = registerMetronome(require(BUILD_DIR));
+const metronomeGetLoadContext = createMetronomeGetLoadContext(
+  buildWithMetronome,
+  { config: require("./metronome.config.js") }
+);
+
 app.all(
   "*",
   MODE === "production"
-    ? createRequestHandler({ build: require(BUILD_DIR) })
+    ? createRequestHandler({
+        build: buildWithMetronome,
+        getLoadContext: metronomeGetLoadContext,
+      })
     : (...args) => {
         purgeRequireCache();
         const requestHandler = createRequestHandler({
-          build: require(BUILD_DIR),
+          build: buildWithMetronome,
+
           mode: MODE,
+          getLoadContext: metronomeGetLoadContext,
         });
         return requestHandler(...args);
       }
